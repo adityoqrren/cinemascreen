@@ -64,7 +64,7 @@ import com.myapp.cinemascreen.ui.theme.YellowMain
 fun ProfileScreen(
     backToBefore: () -> Unit,
     logoutToLoginScreen: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
 
     val isLogin by viewModel.isLogin.collectAsStateWithLifecycle()
@@ -72,6 +72,8 @@ fun ProfileScreen(
     val logoutState by viewModel.logoutState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
+
+    val userData by viewModel.userData.collectAsStateWithLifecycle()
 
     //val coroutineScope = rememberCoroutineScope()
 
@@ -165,20 +167,20 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(28.dp))
                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
                         Text(
-                            text = "Adityo Aji Pambudi",
+                            text = userData.fullname,
                             fontFamily = fontFamily,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Normal
                         )
                         Text(
-                            text = "adityostarr",
+                            text = userData.username,
                             fontFamily = fontFamily,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Normal,
                             color = BlackText2
                         )
                         Text(
-                            text = "adityoajipam@gmail.com",
+                            text = userData.email,
                             fontFamily = fontFamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Normal,
@@ -187,7 +189,7 @@ fun ProfileScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "Indonesia", modifier = Modifier.padding(end = 12.dp))
+                            Text(text = userData.country, modifier = Modifier.padding(end = 12.dp))
                             OutlinedButton(
                                 onClick = {},
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
@@ -227,7 +229,7 @@ fun ProfileScreen(
                 ) {
                     ProfileCardElements(
                         icon = IconProfileCardElements.IconByVector(Icons.Default.Person),
-                        name = "Person"
+                        name = "Person",
                     ) {}
                     HorizontalDivider(
                         color = LightGrey
@@ -298,6 +300,9 @@ fun ProfileCardElements(icon: IconProfileCardElements, name: String, navigateFun
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .clickable {
+                navigateFunction()
+            }
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp)
     ) {

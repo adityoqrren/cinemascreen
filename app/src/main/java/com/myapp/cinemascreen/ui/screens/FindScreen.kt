@@ -74,6 +74,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.myapp.cinemascreen.R
 import com.myapp.cinemascreen.data.models.MovieListItem
 import com.myapp.cinemascreen.fontFamily
+import com.myapp.cinemascreen.ui.screens.components.EasyGrid
 import com.myapp.cinemascreen.ui.screens.components.FavoritesCategoryButtons
 import com.myapp.cinemascreen.ui.screens.components.GridListIntrinsicPaging
 import com.myapp.cinemascreen.ui.screens.components.GridMovieTVItem
