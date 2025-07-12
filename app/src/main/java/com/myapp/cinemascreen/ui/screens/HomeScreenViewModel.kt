@@ -42,6 +42,8 @@ class HomeScreenViewModel @Inject constructor(
 //    private val _showToast = MutableStateFlow<Boolean>(false)
 //    val showToast : StateFlow<Boolean> get() = _showToast
 
+    private var _selectedPopularCategory = 1;
+
     private var _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> get() = _errorMessage
 
@@ -168,6 +170,7 @@ class HomeScreenViewModel @Inject constructor(
     }
 
     fun getPopular(popularParams: Int) {
+        _selectedPopularCategory = popularParams
         viewModelScope.launch {
             when (popularParams) {
                 1 -> {
@@ -278,10 +281,7 @@ class HomeScreenViewModel @Inject constructor(
                 Log.d("check setRefresh: ", "after delay")
                 getTrendingNow()
                 //refresh all popular data
-                getPopularStreaming()
-                getPopularRent()
-                getPopularTV()
-                getPopularMovieOnCinema()
+                getPopular(_selectedPopularCategory)
                 getPlayingNowMovies()
                 getAiringNowTV()
             }

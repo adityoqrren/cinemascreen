@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Clear
@@ -445,7 +446,7 @@ fun FindScreenToolbar(
                             focusManager.clearFocus()
                             onChangeInSearch(false)
                         }) {
-                            Icon(Icons.Outlined.ArrowBack, contentDescription = "icon back search")
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "icon back search")
                         }
                     } else {
 //                        IconButton(onClick = {}) {

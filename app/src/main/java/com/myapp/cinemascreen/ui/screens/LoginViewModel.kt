@@ -13,7 +13,6 @@ import com.myapp.cinemascreen.data.CinemaScreenRepository
 import com.myapp.cinemascreen.ui.UserPreferences
 import com.myapp.cinemascreen.ui.screens.data.UserInfo
 import com.myapp.cinemascreen.ui.states.LoginEvent
-import com.myapp.cinemascreen.ui.states.LogoutEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,9 +38,7 @@ class LoginViewModel @Inject constructor(
     private var _isLogin = MutableStateFlow<Boolean>(false)
     val isLogin get() : StateFlow<Boolean> = _isLogin
     private var _emailLogin = MutableStateFlow<String>("")
-    val emailLogin get() : StateFlow<String> = _emailLogin
     private var _usernameLogin = MutableStateFlow<String>("")
-    val usernameLogin get() : StateFlow<String> = _usernameLogin
 
     init {
         Log.d("check loginviewmodel","initialized")

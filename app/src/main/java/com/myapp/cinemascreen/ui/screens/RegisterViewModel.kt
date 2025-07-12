@@ -13,7 +13,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.firestore
 import com.myapp.cinemascreen.data.models.UserRegistration
-import com.myapp.cinemascreen.ui.screens.data.UserInfo
 import com.myapp.cinemascreen.ui.states.RegisterEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

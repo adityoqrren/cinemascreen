@@ -9,7 +9,6 @@ import com.google.firebase.firestore.firestore
 import com.myapp.cinemascreen.data.CinemaScreenRepository
 import com.myapp.cinemascreen.ui.UserPreferences
 import com.myapp.cinemascreen.ui.screens.data.UserInfo
-import com.myapp.cinemascreen.ui.states.LoginEvent
 import com.myapp.cinemascreen.ui.states.LogoutEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +71,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun getUserInfo(uid: String){
+    private fun getUserInfo(uid: String){
         viewModelScope.launch {
             val db = Firebase.firestore
             val userInfo = UserInfo()

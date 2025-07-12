@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
@@ -108,7 +110,7 @@ fun ProfileScreen(
                     .statusBarsPadding()
             ) {
                 Icon(
-                    Icons.Default.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     tint = Color.White,
                     contentDescription = "",
                     modifier = Modifier
@@ -205,7 +207,7 @@ fun ProfileScreen(
                             ) {
                                 Text(text = "change country")
                                 Icon(
-                                    Icons.Default.KeyboardArrowRight,
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = "icon button right"
                                 )
                             }
