@@ -17,7 +17,6 @@ data class MovieListItemEntity(
 @Entity("categories")
 data class CategoryEntity(
     @PrimaryKey
-    @NonNull
     val c_id: Int,
     val name: String
 )

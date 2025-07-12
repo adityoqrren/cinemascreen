@@ -110,7 +110,7 @@ fun RegisterScreen(
         var valueOfPassword by remember { mutableStateOf("") }
         var valueOfConfirmPassword by remember { mutableStateOf("") }
         var selectedCountryIndex by remember { mutableIntStateOf(-1) }
-        val listCountries = listOf<String>("Indonesia", "Malesia", "Bekasi")
+        val listCountries = listOf<String>("Indonesia", "Malaysia", "Vietnam", "Kamboja")
 
         val valueOfCountry by remember(selectedCountryIndex) {
             derivedStateOf {

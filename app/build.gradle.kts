@@ -58,7 +58,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -99,8 +99,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.33.0-alpha")
 
     //Dependency Injection (DI) with Hilt
-    implementation("com.google.dagger:hilt-android:2.48.1")
-    kapt("com.google.dagger:hilt-compiler:2.48.1")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
@@ -117,9 +117,9 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    androidTestImplementation("com.google.dagger:hilt-android:2.46")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.46")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:2.46")
+    androidTestImplementation("com.google.dagger:hilt-android:2.51.1")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.51.1")
 
     //NETWORK : Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
@@ -132,7 +132,6 @@ dependencies {
     val room_version = "2.6.1"
 
     implementation("androidx.room:room-runtime:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
 
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$room_version")

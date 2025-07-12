@@ -106,7 +106,7 @@ fun BottomLikeShare(
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessLow
-        )
+        ), label = ""
     )
 
     Surface(

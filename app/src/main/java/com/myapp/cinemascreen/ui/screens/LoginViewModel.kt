@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.firestore.firestore
 import com.myapp.cinemascreen.data.CinemaScreenRepository
 import com.myapp.cinemascreen.ui.UserPreferences
+import com.myapp.cinemascreen.ui.screens.data.UserInfo
 import com.myapp.cinemascreen.ui.states.LoginEvent
-import com.myapp.cinemascreen.ui.states.LogoutEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,15 +35,10 @@ class LoginViewModel @Inject constructor(
     private var _loginState = MutableStateFlow<LoginEvent>(LoginEvent())
     val loginState get() : StateFlow<LoginEvent> = _loginState
 
-    private var _logoutState = MutableStateFlow<LogoutEvent>(LogoutEvent())
-    val logoutState get() : StateFlow<LogoutEvent> = _logoutState
-
     private var _isLogin = MutableStateFlow<Boolean>(false)
     val isLogin get() : StateFlow<Boolean> = _isLogin
     private var _emailLogin = MutableStateFlow<String>("")
-    val emailLogin get() : StateFlow<String> = _emailLogin
     private var _usernameLogin = MutableStateFlow<String>("")
-    val usernameLogin get() : StateFlow<String> = _usernameLogin
 
     init {
         Log.d("check loginviewmodel","initialized")
@@ -63,18 +61,24 @@ class LoginViewModel @Inject constructor(
                     Log.d("LoginViewModel", "signInWithEmail:success")
                     val user = auth.currentUser
                     user?.let {
-                        saveToPreferences(it.email.toString(),getUserInfo(it.uid))
+                        saveToPreferences(it.email.toString(),getUserInfo(it.uid).username)
                     }
                 }else{
+                    val errorMessage = when (val exception = task.exception) {
+                        is FirebaseAuthInvalidUserException -> "Email not registered"
+                        is FirebaseAuthInvalidCredentialsException -> "Incorrect password"
+                        is FirebaseNetworkException -> "No internet connection"
+                        else -> "Login failed: ${exception?.localizedMessage}"
+                    }
                     Log.w("LoginViewModel", "signInWithEmail:failure", task.exception)
-                    _loginState.value = LoginEvent(isLoading = false, errorMessage = "error")
+                    _loginState.value = LoginEvent(isLoading = false, errorMessage = errorMessage)
                 }
             }
     }
 
-    fun getUserInfo(uid: String) : String{
+    fun getUserInfo(uid: String) : UserInfo{
         val db = Firebase.firestore
-        var username = ""
+        val userInfo = UserInfo()
 
         db.collection("users")
             .document(uid)
@@ -83,7 +87,9 @@ class LoginViewModel @Inject constructor(
                 document ->
                 if(document != null){
                     val data = document.data
-                    username = data?.get("username") as String
+                    userInfo.username = data?.get("username") as String
+                    userInfo.fullname = data.get("fullname") as String
+                    userInfo.country = data.get("country") as String
                 }else{
                     Log.d("LoginViewModel", "getUserInfo:error NOT FOUND")
                 }
@@ -92,7 +98,7 @@ class LoginViewModel @Inject constructor(
                 Log.d("LoginViewModel", "getUserInfo:error ${exception.printStackTrace()}")
             }
 
-        return username
+        return userInfo
     }
 
     private fun saveToPreferences(email: String, username: String){
@@ -123,31 +129,6 @@ class LoginViewModel @Inject constructor(
 
     fun setErrorMessage(msg : String?){
         _loginState.value = LoginEvent(isLoading = false, errorMessage = msg)
-        _logoutState.value = LogoutEvent(isLoading = false, errorMessage = msg)
-    }
-
-    fun logout(){
-        _logoutState.value = LogoutEvent(isLoading = true)
-
-        viewModelScope.launch {
-            //reset data in datastore preferences
-            userPreferences.saveUserData(false,"","")
-            //logout in firebase auth
-            auth.signOut()
-            //update check in
-//            val checkLoginJob = async {
-                checkLogin()
-//            }
-//            checkLoginJob.await()
-            Log.d("check logout()","must be after await()")
-            //send event
-            if(!_isLogin.value){
-                repository.deleteAllMovieTVSaved()
-                _logoutState.value = LogoutEvent(isLoading = false, isLogoutSuccess = true)
-            }else{
-                _logoutState.value = LogoutEvent(isLoading = false, isLogoutSuccess = false, errorMessage = "Logout error")
-            }
-        }
     }
 
     fun forgotPassword(){

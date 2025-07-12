@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Clear
@@ -74,6 +75,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.myapp.cinemascreen.R
 import com.myapp.cinemascreen.data.models.MovieListItem
 import com.myapp.cinemascreen.fontFamily
+import com.myapp.cinemascreen.ui.screens.components.EasyGrid
 import com.myapp.cinemascreen.ui.screens.components.FavoritesCategoryButtons
 import com.myapp.cinemascreen.ui.screens.components.GridListIntrinsicPaging
 import com.myapp.cinemascreen.ui.screens.components.GridMovieTVItem
@@ -444,7 +446,7 @@ fun FindScreenToolbar(
                             focusManager.clearFocus()
                             onChangeInSearch(false)
                         }) {
-                            Icon(Icons.Outlined.ArrowBack, contentDescription = "icon back search")
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "icon back search")
                         }
                     } else {
 //                        IconButton(onClick = {}) {

@@ -10,6 +10,7 @@ import com.google.firebase.firestore.firestore
 import com.myapp.cinemascreen.utils.MediaType
 import com.myapp.cinemascreen.data.CinemaScreenRepository
 import com.myapp.cinemascreen.data.models.MovieTVFavorite
+import com.myapp.cinemascreen.ui.states.UIstate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor() : ViewModel() {
-//    private val _favoritesMovieTV = MutableStateFlow<List<MovieTVListItem>>(emptyList())
-//    val favoritesMovieTV : StateFlow<List<MovieTVListItem>> get() = _favoritesMovieTV
 
     private lateinit var listenerRegistration: ListenerRegistration
 
@@ -33,14 +32,14 @@ class FavoritesViewModel @Inject constructor() : ViewModel() {
     private val _idSelected = MutableStateFlow<Int>(1)
     val idSelected: StateFlow<Int> get() = _idSelected
 
+    private val _uiState = MutableStateFlow<UIstate<List<MovieTVFavorite>>>(UIstate.Loading)
+    val uiState: StateFlow<UIstate<List<MovieTVFavorite>>> get() = _uiState
+
     private var listFavoriteAll : MutableStateFlow<List<MovieTVFavorite>> = MutableStateFlow(emptyList())
     private var listFavoriteMovies : MutableStateFlow<List<MovieTVFavorite>> = MutableStateFlow(
         emptyList()
     )
     private var listFavoriteTV : MutableStateFlow<List<MovieTVFavorite>> = MutableStateFlow(emptyList())
-
-
-    //buat UI state
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val favoritesMovieTV: StateFlow<List<MovieTVFavorite>> = idSelected.flatMapLatest { id ->
@@ -54,29 +53,37 @@ class FavoritesViewModel @Inject constructor() : ViewModel() {
         started = SharingStarted.WhileSubscribed(5000L),
         initialValue = emptyList()
     )
-    //because mapLatest mapping Flow to Flow, we must use stateIn to transform Flow to StateFlow
+
+    private var _totalMoviesTV : MutableStateFlow<Int> = MutableStateFlow(0)
+    val totalMoviesTV get() = _totalMoviesTV
 
     init {
-        //getFavorites()
         Log.d("FavoritesViewModel","FavoritesViewModel created")
         getFavorites()
     }
 
     private fun getFavorites(){
         viewModelScope.launch {
-            auth.uid?.let {
-                uid ->
-            listenerRegistration =  db.collection("users")
+            // Set loading state
+            _uiState.value = UIstate.Loading
+            
+            auth.uid?.let { uid ->
+                listenerRegistration = db.collection("users")
                     .document(uid)
                     .collection("favorites")
-                    .addSnapshotListener{
-                        value, e ->
-                        if(e!=null){
+                    .addSnapshotListener { value, e ->
+                        if (e != null) {
                             Log.w("getFavorites in FavoritesViewModel","Listen failed", e)
+                            _uiState.value = UIstate.Error(
+                                message = "Failed to load favorites: ${e.message}",
+                                dataWhenError = emptyList(),
+                                errorCode = null
+                            )
                             return@addSnapshotListener
                         }
+                        
                         val favorites = mutableListOf<MovieTVFavorite>()
-                        for (doc in value!!){
+                        for (doc in value!!) {
                             val id = doc.getLong("id")!!.toInt()
                             val title = doc.getString("title").toString()
                             val posterPath = doc.getString("poster_path").toString()
@@ -86,14 +93,26 @@ class FavoritesViewModel @Inject constructor() : ViewModel() {
                                 MovieTVFavorite(id, title, posterPath, mediaType)
                             )
                         }
+                        
                         listFavoriteAll.value = favorites
+                        _totalMoviesTV.value = favorites.size
                         listFavoriteMovies.value = favorites.filter {
                             it.media_type == MediaType.Movie
                         }
                         listFavoriteTV.value = favorites.filter {
                             it.media_type == MediaType.TV
                         }
+                        
+                        // Set success state
+                        _uiState.value = UIstate.Success(favorites)
                     }
+            } ?: run {
+                // User not authenticated
+                _uiState.value = UIstate.Error(
+                    message = "User not authenticated",
+                    dataWhenError = emptyList(),
+                    errorCode = 401
+                )
             }
         }
     }
@@ -104,20 +123,11 @@ class FavoritesViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-//    val favoritesMovieTV = _idSelected.mapLatest {
-//        when(it){
-//            1 -> listOf(cinemaScreenRepository.getPopularTVonTV(),cinemaScreenRepository.getPopularMovieTheaters()).flatten()
-//            2 -> cinemaScreenRepository.getPopularMovieTheaters()
-//            else -> cinemaScreenRepository.getPopularTVonTV()
-//        }
-//    }.stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.WhileSubscribed(5000L),
-//        initialValue = emptyList()
-//    )
-
     fun setIdSelected(id: Int){
         _idSelected.value = id
     }
 
+    fun retry() {
+        getFavorites()
+    }
 }

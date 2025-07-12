@@ -2,7 +2,6 @@ package com.myapp.cinemascreen.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,9 +44,9 @@ import com.myapp.cinemascreen.fontFamily
 import com.myapp.cinemascreen.ui.screens.components.DisposableEffectWithLifecycle
 import com.myapp.cinemascreen.ui.screens.components.FavoritesCategoryButtons
 import com.myapp.cinemascreen.ui.screens.components.GridList
+import com.myapp.cinemascreen.ui.states.UIstate
 
 @Composable
-
 fun FavoritesScreen(
     toDetailScreen: (Int, String) -> Unit,
     toProfileScreen: () -> Unit,
@@ -54,6 +54,8 @@ fun FavoritesScreen(
 ) {
     val categoryChoosen by viewModel.idSelected.collectAsStateWithLifecycle()
     val favoritesMovieTV by viewModel.favoritesMovieTV.collectAsStateWithLifecycle()
+    val totalMoviesTV by viewModel.totalMoviesTV.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DisposableEffectWithLifecycle(
         onDestroy = {
@@ -62,50 +64,87 @@ fun FavoritesScreen(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(contentPadding = PaddingValues(top = 140.dp)) {
-            item {
-                FavoritesCategoryButtons(
-                    modifier = Modifier.padding(top = 20.dp),
-                    categoryChoosen = categoryChoosen,
-                    onChangeCategory = { categoryCode: Int -> viewModel.setIdSelected(categoryCode) },
+        when (uiState) {
+            is UIstate.Error -> {
+                Text(
+                    "There is a problem with our server or connection",
+                    modifier = Modifier.align(Alignment.Center)
                 )
-                //FavoritesList(data = favoritesMovieTV)
             }
-            item{
-                Spacer(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(16.dp))
+
+            UIstate.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
-            GridList(
-                columnCount = 2,
-                verticalSpace = 8.dp,
-                horizontalSpace = 8.dp,
-                horizontalPadding = 16.dp,
-                favoritesMovieTV
-            ){ item ->
-                PosterCardExpanding(item = item, onClickDetail = {toDetailScreen(item.id, item.media_type)})
+
+            is UIstate.Success -> {
+                LazyColumn(contentPadding = PaddingValues(top = 140.dp)) {
+                    item {
+                        FavoritesCategoryButtons(
+                            modifier = Modifier.padding(top = 20.dp),
+                            categoryChoosen = categoryChoosen,
+                            onChangeCategory = { categoryCode: Int ->
+                                viewModel.setIdSelected(categoryCode)
+                            },
+                        )
+                    }
+                    item {
+                        Spacer(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(16.dp)
+                        )
+                    }
+                    if (favoritesMovieTV.isEmpty()) {
+                        item {
+                            val noItemText = when (categoryChoosen) {
+                                1 -> "No Movie/TV you like"
+                                2 -> "No Movie you like"
+                                3 -> "No TV Show you like"
+                                else -> "No Item"
+                            }
+                            Text(
+                                text = noItemText,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    } else {
+
+                        GridList(
+                            columnCount = 2,
+                            verticalSpace = 8.dp,
+                            horizontalSpace = 8.dp,
+                            horizontalPadding = 16.dp,
+                            favoritesMovieTV
+                        ) { item ->
+                            PosterCardExpanding(
+                                item = item,
+                                onClickDetail = { toDetailScreen(item.id, item.media_type) }
+                            )
+                        }
+
+                    }
+                }
             }
         }
-        FavoriteTopToolbar(toProfileScreen = toProfileScreen)
+        FavoriteTopToolbar(
+            toProfileScreen = toProfileScreen,
+            totalMoviesTV = totalMoviesTV
+        )
     }
 }
 
-//@Composable
-//fun FavoritesList(data: List<MovieTVFavorite>) {
-//    EasyGrid(
-//        columnCount = 2,
-//        paddingValues = PaddingValues(16.dp),
-//        verticalSpace = 8.dp,
-//        horizontalSpace = Arrangement.spacedBy(8.dp),
-//        list = data
-//    ) { item ->
-//        PosterCardExpanding(item = item)
-//    }
-//}
-
-
 @Composable
-fun FavoriteTopToolbar(modifier: Modifier = Modifier, toProfileScreen: () -> Unit) {
+fun FavoriteTopToolbar(
+    modifier: Modifier = Modifier,
+    totalMoviesTV: Int,
+    toProfileScreen: () -> Unit
+) {
     Column(
         modifier = modifier
             .clip(shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
@@ -145,57 +184,22 @@ fun FavoriteTopToolbar(modifier: Modifier = Modifier, toProfileScreen: () -> Uni
         Row(
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
-            Text(text = "20 movies and tv shows", color = Color.White)
+            Text(text = "$totalMoviesTV movies and tv shows", color = Color.White)
         }
     }
 
-}
-
-@Composable
-fun <T> EasyGrid(
-    columnCount: Int,
-    paddingValues: PaddingValues,
-    verticalSpace: Dp,
-    horizontalSpace: Arrangement.Horizontal,
-    list: List<T>,
-    modifier: Modifier = Modifier,
-    content: @Composable (T) -> Unit,
-) {
-    Column(
-        modifier = modifier.padding(paddingValues),
-        verticalArrangement = Arrangement.spacedBy(space = verticalSpace)
-    ) {
-        for (i in list.indices step columnCount) {
-            Row(
-                horizontalArrangement = horizontalSpace,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                for (j in 0 until columnCount) {
-
-                    if ((i + j) < list.size) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            content(list[i + j])
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f, fill = true))
-                    }
-
-                }
-            }
-        }
-    }
 }
 
 @Composable
 fun PosterCardExpanding(item: MovieTVFavorite, onClickDetail: () -> Unit) {
     //Log.d("see PosterCard item", "${item.title} and ${item.poster_path}")
     Card(
-        modifier = Modifier.aspectRatio(2/3f).clickable {
-            onClickDetail()
-        }
-    ){
+        modifier = Modifier
+            .aspectRatio(2 / 3f)
+            .clickable {
+                onClickDetail()
+            }
+    ) {
         Box {
             AsyncImage(
                 model = "https://image.tmdb.org/t/p/original/${item.poster_path}",
